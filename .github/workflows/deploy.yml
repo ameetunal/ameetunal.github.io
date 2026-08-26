@@ -1,0 +1,52 @@
+name: Osmanlı Sitesini Kök Adrese Yayınla
+
+# Bu repo yalnızca bir yayın hedefidir; kaynak kod ameetunal/Oyunlar
+# reposunda tutulur. Bu iş akışı o kaynağı çekip kök yol (/) ile
+# derler ve buradan (https://ameetunal.github.io/) yayınlar — Google
+# AdSense'in "üst düzey alan" şartını karşılamak için gerekli.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kaynak kodu çek (ameetunal/Oyunlar)
+        uses: actions/checkout@v4
+        with:
+          repository: ameetunal/Oyunlar
+          ref: claude/ottoman-history-app-ek5r1u
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Manifest'i kök yola göre düzelt
+        run: sed -i 's#/Oyunlar/#/#g' public/manifest.webmanifest
+      - name: Kök yol (/) ile derle
+        run: npx vite build --base=/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
