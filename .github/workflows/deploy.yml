@@ -37,15 +37,6 @@ jobs:
         run: sed -i 's#/Oyunlar/#/#g' public/manifest.webmanifest
       - name: Kök yol (/) ile derle
         run: npx vite build --base=/
-      - name: Quiz uygulamasını derle (/osmanli-quiz/ alt yolu)
-        working-directory: quiz-app
-        run: |
-          npm ci
-          npx vite build
-      - name: Quiz uygulamasını ana site build'inin altına yerleştir
-        run: |
-          mkdir -p dist/osmanli-quiz
-          cp -r quiz-app/dist/. dist/osmanli-quiz/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
